@@ -1,0 +1,63 @@
+utils_buttons:
+  back:
+    ru: "Назад"
+  main_menu:
+    ru: "Главное меню"
+  personal_acc:
+    ru: "Личный кабинет"
+  rework:
+    ru: "Отмена"
+
+main_menu:
+  about:
+    ru: "О нас"
+  rules:
+    ru: "Правила"
+  help:
+    ru: "help"
+
+help:
+  faq:
+    ru: "FAQ"
+  not_found_answer:
+    ru: "Ответ на вопрос не найден"
+  complaints:
+    ru: "Жалобы"
+  suggestions:
+    ru: "Предложения"
+
+personal_acc:
+  subscribe:
+    ru: "Подписка"
+  info:
+    ru: "Инфо"
+  balance:
+    ru: "Баланс"
+  history:
+    ru: "История"
+
+subscribe:
+  buy_subscribe:
+    ru: "Купить подписку"
+  variants:
+    ru: "Варианты подписки"
+
+variants:
+  by_subscribe:
+    ru: "Купить подписку"
+
+balance:
+  deposit:
+    ru: "Пополнить"
+  enter_coupon:
+    ru: "Ввести купон"
+
+info:
+  upgrade_status:
+    ru: "Как повысить статус?"
+
+
+
+
+
+

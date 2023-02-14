@@ -1,6 +1,6 @@
 from aiogram import executor
-from bot import dp
-from frontend.telegram_bot.handlers import rg_msg_hd
+from .bot import dp
+from .telegram_bot.handlers import rg_msg_hd
 
 
 async def on_startup(_) -> None:
