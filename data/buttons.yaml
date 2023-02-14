@@ -14,7 +14,7 @@ main_menu:
   rules:
     ru: "Правила"
   help:
-    ru: "help"
+    ru: "/help"
 
 help:
   faq:
