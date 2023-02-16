@@ -3,3 +3,12 @@ main_menu:
 
 help:
   ru: "Выберите раздел:"
+
+faq:
+  ru: "text faq"
+
+rules:
+  ru: "text rules"
+
+about:
+  ru: "text about"
