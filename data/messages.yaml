@@ -12,3 +12,38 @@ rules:
 
 about:
   ru: "text about"
+
+personal_acc:
+  ru: "Личный кабинет"
+
+subscribe:
+  status:
+    ru: "Статус: "
+  finish:
+    ru: "Осталось дней: "
+
+info:
+  login:
+    ru: "Логин: "
+  status:
+    ru: "Статус: "
+  total_buy:
+    ru: "Всего потрачено: "
+  total_sub:
+    ru: "Всего мясецев был подписан: "
+
+upgrade_status:
+  ru: "instruction how to upgrade status"
+
+variants:
+  ru: "Доступные варианты подписки: "
+
+
+history:
+  date:
+    ru: "Дата покупки: "
+  name:
+    ru: "Название подписки: "
+
+balance:
+  ru: "Ваш баланс: "

@@ -43,7 +43,7 @@ subscribe:
     ru: "Варианты подписки"
 
 variants:
-  by_subscribe:
+  buy_subscribe:
     ru: "Купить подписку"
 
 balance:
@@ -55,6 +55,7 @@ balance:
 info:
   upgrade_status:
     ru: "Как повысить статус?"
+
 
 
 
