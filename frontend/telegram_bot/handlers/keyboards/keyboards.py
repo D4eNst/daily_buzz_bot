@@ -1,9 +1,6 @@
-import yaml
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from data import buttons
 from data.config import language
-
-with open('data/buttons.yaml', encoding='utf-8') as stream:
-    buttons = yaml.load(stream, Loader=yaml.FullLoader)
 
 
 def main_menu_btn() -> ReplyKeyboardMarkup:

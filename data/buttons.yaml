@@ -5,7 +5,7 @@ utils_buttons:
     ru: "Главное меню"
   personal_acc:
     ru: "Личный кабинет"
-  rework:
+  cancel:
     ru: "Отмена"
 
 main_menu:
