@@ -28,7 +28,7 @@ async def variants(msg: types.Message) -> None:
 async def balance(msg: types.Message) -> None:
     bal = 123  # request to database
 
-    await msg.answer(f"{messages['balance'][language]}<b>{bal}</b>", reply_markup=kb.balance_kb())
+    await msg.answer(f"{messages['balance'][language]}<b>{bal}</b> {currency}", reply_markup=kb.balance_kb())
 
 
 async def info(msg: types.Message) -> None:
