@@ -1,14 +1,14 @@
-from aiogram import Dispatcher
 from aiogram.dispatcher import filters
 from data.config import language
 from data import buttons
+import frontend.telegram_bot.states as states
 
 from .basic_handlers import cmd_start, cmd_help, faq, rules, about, upgrade_status, main_menu, personal_acc
 from .receiving_handlers import subscribe, variants, info, balance, history
-# from .states_handlers import
+from .states_handlers import add_balance, finish_balance
 
 
-def rg_msg_hd(dp: Dispatcher) -> None:
+def rg_msg_hd(dp) -> None:
     dp.register_message_handler(cmd_start, commands=['start'])
     dp.register_message_handler(cmd_help, filters.Text([buttons["main_menu"]["help"][language], "/help"]))
 
@@ -24,6 +24,10 @@ def rg_msg_hd(dp: Dispatcher) -> None:
     dp.register_message_handler(info, filters.Text(buttons["personal_acc"]["info"][language]))
     dp.register_message_handler(history, filters.Text(buttons["personal_acc"]["history"][language]))
 
+    dp.register_message_handler(add_balance, filters.Text(buttons["balance"]["deposit"][language]))
+
     dp.register_message_handler(upgrade_status, filters.Text(buttons["info"]["upgrade_status"][language]))
     dp.register_message_handler(variants, filters.Text(buttons["subscribe"]["variants"][language]))
     dp.register_message_handler(faq, filters.Text(buttons["help"]["faq"][language]))
+
+    dp.register_message_handler(finish_balance, state=states.BalanceStatesGroup.WaitingPrice)

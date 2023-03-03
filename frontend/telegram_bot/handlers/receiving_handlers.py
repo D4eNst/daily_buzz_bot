@@ -2,6 +2,7 @@ from aiogram import types
 from data import messages
 from data.config import language, currency
 from .keyboards import keyboards as kb
+import backend.database.utils as db
 
 
 async def subscribe(msg: types.Message) -> None:
@@ -26,7 +27,8 @@ async def variants(msg: types.Message) -> None:
 
 
 async def balance(msg: types.Message) -> None:
-    bal = 123  # request to database
+    user = db.get_user(msg.from_user.id)
+    bal = user.balance
 
     await msg.answer(f"{messages['balance'][language]}<b>{bal}</b> {currency}", reply_markup=kb.balance_kb())
 

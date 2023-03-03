@@ -1,12 +1,14 @@
 from aiogram import types
 from data import messages
 from data.config import language
-from backend.database import models, utils
+from backend.database import models, utils as db
 from .keyboards import keyboards as kb
 
 
 async def cmd_start(msg: types.Message) -> None:
     user = models.User(msg.from_user.id)
+    if not db.get_user(user.tg_id):
+        db.add_user(user)
 
     await msg.answer(messages["main_menu"][language], reply_markup=kb.main_menu_kb())
 

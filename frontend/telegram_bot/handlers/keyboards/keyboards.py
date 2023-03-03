@@ -1,6 +1,12 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from typing import Type
+
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from data import buttons
 from data.config import language
+
+
+def remove_kb():
+    return ReplyKeyboardRemove
 
 
 def main_menu_btn() -> ReplyKeyboardMarkup:

@@ -1,5 +1,5 @@
 import sqlite3 as sq
-from models import User, Subscribe
+from .models import User, Subscribe
 
 conn = sq.connect("backend/database/database.db")
 cursor = conn.cursor()
@@ -7,14 +7,13 @@ cursor = conn.cursor()
 
 def connect() -> None:
     cursor.execute("""CREATE TABLE IF NOT EXISTS users(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    tg_id INTEGER UNIQUE,
-    balance INTEGER,
-    total_buy INTEGER,
-    status INTEGER,
-    subscribe BOOL
-    subscribe_date TEXT DEFAULT NONE,
-    subscribe_period INTEGER DEFAULT NONE
+    tg_id INTEGER PRIMARY KEY,
+    balance INTEGER DEFAULT 0,
+    total_buy INTEGER DEFAULT 0,
+    status INTEGER DEFAULT 1,
+    subscribe BOOL DEFAULT FALSE,
+    subscribe_date INTEGER,
+    subscribe_period INTEGER
     )""")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS subscribes(
@@ -38,16 +37,35 @@ def close() -> None:
 
 
 def add_user(user) -> None:
+    cursor.execute("""
+            INSERT INTO users(tg_id)
+            VALUES(?)
+        """, (user.tg_id, ))
     conn.commit()
     pass
 
 
-def get_user(tg_id) -> None:
-    conn.commit()
-    pass
+def get_user(user_id) -> User or None:
+    cursor.execute(f"SELECT * FROM users WHERE tg_id=={user_id}")
+    res = cursor.fetchone()
+    if not res:
+        return None
+    else:
+        values_list = list(res)
+        values_list[4] = bool(values_list[4])
+        user = User(*values_list)
+        return user
 
 
 def update_user(user) -> None:
+    cursor.execute("""UPDATE users SET
+    balance = ?,
+    total_buy = ?,
+    status = ?,
+    subscribe = ?,
+    subscribe_date = ?,
+    subscribe_period = ? WHERE tg_id = ?
+    """, user.get_values())
     conn.commit()
     pass
 

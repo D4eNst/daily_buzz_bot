@@ -5,4 +5,4 @@ from data.config import token
 
 storage = MemoryStorage()
 bot = Bot(token=token, parse_mode=types.ParseMode.HTML)
-dp = Dispatcher(bot, storage)
+dp = Dispatcher(bot, storage=storage)
