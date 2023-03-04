@@ -46,13 +46,13 @@ def add_user(user) -> None:
 
 
 def get_user(user_id) -> User or None:
-    cursor.execute(f"SELECT * FROM users WHERE tg_id=={user_id}")
+    cursor.execute("""SELECT * FROM users WHERE tg_id==?""", (user_id,))
     res = cursor.fetchone()
     if not res:
         return None
     else:
         values_list = list(res)
-        values_list[4] = bool(values_list[4])
+        values_list[4] = True if values_list[4] else False
         user = User(*values_list)
         return user
 
@@ -80,9 +80,24 @@ def add_subscribe(sub) -> None:
     pass
 
 
-def get_subscribe(sub_id) -> None:
-    conn.commit()
-    pass
+def get_subscribe(sub_id) -> Subscribe or None:
+    cursor.execute("""SELECT * FROM subscribes WHERE id==?""", (sub_id,))
+    res = cursor.fetchone()
+    if not res:
+        return None
+    else:
+        sub = Subscribe(*res)
+        return sub
+
+
+def get_subscribes() -> list:
+    cursor.execute("""SELECT * FROM subscribes""")
+    res = cursor.fetchall()
+    subs = []
+    for i in res:
+        sub = Subscribe(*i)
+        subs.append(sub)
+    return subs
 
 
 def update_subscribe(sub) -> None:

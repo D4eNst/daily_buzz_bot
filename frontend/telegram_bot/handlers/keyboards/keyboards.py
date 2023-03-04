@@ -1,5 +1,3 @@
-from typing import Type
-
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from data import buttons
 from data.config import language
@@ -20,6 +18,15 @@ def main_menu_btn() -> ReplyKeyboardMarkup:
 def back_btn() -> ReplyKeyboardMarkup:
     utils_buttons = buttons["utils_buttons"]
     keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(utils_buttons["main_menu"][language]), KeyboardButton(utils_buttons["back"][language])]
+    ], resize_keyboard=True)
+    return keyboard
+
+
+def confirm_btn() -> ReplyKeyboardMarkup:
+    utils_buttons = buttons["utils_buttons"]
+    keyboard = ReplyKeyboardMarkup(keyboard=[
+        [KeyboardButton(utils_buttons["confirm"][language])],
         [KeyboardButton(utils_buttons["main_menu"][language]), KeyboardButton(utils_buttons["back"][language])]
     ], resize_keyboard=True)
     return keyboard
