@@ -9,8 +9,16 @@ class InsufficientFundsError(Exception):
 
 
 class SubscriptionNotFoundError(Exception):
-    """"""
-    def __init__(self, message="", error_code=407):
+    """ Raised when subscription is not found in database """
+    def __init__(self, message="Subscription is not found in database", error_code=404):
+        self.message = message
+        self.code = error_code
+        super().__init__(message)
+
+
+class MinReplenishmentAmountError(Exception):
+    """ Raised when quantity < min replenishment amount """
+    def __init__(self, message="Subscription is not found in database", error_code=406):
         self.message = message
         self.code = error_code
         super().__init__(message)

@@ -10,7 +10,11 @@ def remove_kb():
 def main_menu_btn() -> ReplyKeyboardMarkup:
     utils_buttons = buttons["utils_buttons"]
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -18,7 +22,14 @@ def main_menu_btn() -> ReplyKeyboardMarkup:
 def back_btn() -> ReplyKeyboardMarkup:
     utils_buttons = buttons["utils_buttons"]
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(utils_buttons["main_menu"][language]), KeyboardButton(utils_buttons["back"][language])]
+        [
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -26,8 +37,19 @@ def back_btn() -> ReplyKeyboardMarkup:
 def confirm_btn() -> ReplyKeyboardMarkup:
     utils_buttons = buttons["utils_buttons"]
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(utils_buttons["confirm"][language])],
-        [KeyboardButton(utils_buttons["main_menu"][language]), KeyboardButton(utils_buttons["back"][language])]
+        [
+            KeyboardButton(
+                text=utils_buttons["confirm"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -37,9 +59,24 @@ def main_menu_kb() -> ReplyKeyboardMarkup:
     main_menu = buttons["main_menu"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(utils_buttons["personal_acc"][language])],
-        [KeyboardButton(main_menu["about"][language]), KeyboardButton(main_menu["rules"][language])],
-        [KeyboardButton(main_menu["help"][language])]
+        [
+            KeyboardButton(
+                text=utils_buttons["personal_acc"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=main_menu["about"][language]
+            ),
+            KeyboardButton(
+                text=main_menu["rules"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=main_menu["help"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -49,9 +86,27 @@ def help_kb() -> ReplyKeyboardMarkup:
     help_buttons = buttons["help"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(help_buttons["faq"][language]), KeyboardButton(utils_buttons["main_menu"][language])],
-        [KeyboardButton(help_buttons["not_found_answer"][language])],
-        [KeyboardButton(help_buttons["complaints"][language]), KeyboardButton(help_buttons["suggestions"][language])]
+        [
+            KeyboardButton(
+                text=help_buttons["faq"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=help_buttons["not_found_answer"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=help_buttons["complaints"][language]
+            ),
+            KeyboardButton(
+                text=help_buttons["suggestions"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -61,9 +116,27 @@ def personal_acc_kb() -> ReplyKeyboardMarkup:
     pers_acc_buttons = buttons["personal_acc"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(pers_acc_buttons["subscribe"][language]), KeyboardButton(pers_acc_buttons["info"][language])],
-        [KeyboardButton(pers_acc_buttons["balance"][language]), KeyboardButton(pers_acc_buttons["history"][language])],
-        [KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=pers_acc_buttons["subscribe"][language]
+            ),
+            KeyboardButton(
+                text=pers_acc_buttons["info"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=pers_acc_buttons["balance"][language]
+            ),
+            KeyboardButton(
+                text=pers_acc_buttons["history"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -73,8 +146,22 @@ def subscribe_kb() -> ReplyKeyboardMarkup:
     sub_buttons = buttons["subscribe"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(sub_buttons["buy_subscribe"][language]), KeyboardButton(sub_buttons["variants"][language])],
-        [KeyboardButton(utils_buttons["back"][language]), KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=sub_buttons["buy_subscribe"][language]
+            ),
+            KeyboardButton(
+                text=sub_buttons["variants"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -84,8 +171,19 @@ def variants_kb() -> ReplyKeyboardMarkup:
     variants_buttons = buttons["variants"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(variants_buttons["buy_subscribe"][language])],
-        [KeyboardButton(utils_buttons["back"][language]), KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=variants_buttons["buy_subscribe"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -95,9 +193,22 @@ def balance_kb() -> ReplyKeyboardMarkup:
     balance_buttons = buttons["balance"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(balance_buttons["deposit"][language]),
-         KeyboardButton(balance_buttons["enter_coupon"][language])],
-        [KeyboardButton(utils_buttons["back"][language]), KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=balance_buttons["deposit"][language]
+            ),
+            KeyboardButton(
+                text=balance_buttons["enter_coupon"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard
 
@@ -107,7 +218,18 @@ def info_kb() -> ReplyKeyboardMarkup:
     info_buttons = buttons["info"]
 
     keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(info_buttons["upgrade_status"][language])],
-        [KeyboardButton(utils_buttons["back"][language]), KeyboardButton(utils_buttons["main_menu"][language])]
+        [
+            KeyboardButton(
+                text=info_buttons["upgrade_status"][language]
+            )
+        ],
+        [
+            KeyboardButton(
+                text=utils_buttons["back"][language]
+            ),
+            KeyboardButton(
+                text=utils_buttons["main_menu"][language]
+            )
+        ]
     ], resize_keyboard=True)
     return keyboard

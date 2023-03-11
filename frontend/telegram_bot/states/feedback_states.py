@@ -1,5 +1,5 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.fsm.state import StatesGroup, State
 
 
 class FeedbackStatesGroup(StatesGroup):
-    WaitingText = State()
+    WAITING_TEXT = State()

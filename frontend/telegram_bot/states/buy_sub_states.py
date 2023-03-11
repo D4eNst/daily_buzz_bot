@@ -1,7 +1,7 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.fsm.state import StatesGroup, State
 
 
 class BuySubStatesGroup(StatesGroup):
-    choose = State()
-    confirm = State()
+    CHOOSE = State()
+    CONFIRM = State()
 

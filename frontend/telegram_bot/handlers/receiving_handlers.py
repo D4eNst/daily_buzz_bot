@@ -1,12 +1,14 @@
+import datetime
 from aiogram import types
-from data import messages
+from data import messages, errors as e
 from data.config import language, currency
 from .keyboards import keyboards as kb
-from backend.database import utils as db
+from backend.database.utils import Database
+from backend.database.models import User, History
 
 
-async def subscribe(msg: types.Message) -> None:
-    user = db.get_user(msg.from_user.id)
+async def subscribe(msg: types.Message, db: Database) -> None:
+    user = await db.get_user(msg.from_user.id)
     sub = user.subscribe
     sub_text = f"{messages['subscribe'][sub][language]}"
     finish = 0
@@ -21,24 +23,31 @@ async def subscribe(msg: types.Message) -> None:
     await msg.answer(ans, reply_markup=kb.subscribe_kb())
 
 
-async def variants(msg: types.Message) -> None:
-    subs = db.get_subscribes()
-    if not subs:
-        await msg.answer(messages["errors"]["NoSubscriptionsAvailableError"][language])
-        return
-    ans = ""
-    for sub in subs:
-        ans += f"➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"\
-               f"<b>{sub.title}</b>\n" \
-               f"{messages['subscribe']['period'][language]}<b>{sub.period}\n" \
-               f"{sub.price} {currency}</b>\n" \
-               f"➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n\n"
+async def variants(msg: types.Message, db: Database) -> None:
+    subs = await db.get_subscribes()
 
+    try:
+        if not subs:
+            raise e.SubscriptionNotFoundError
+    except e.SubscriptionNotFoundError as error:
+        await msg.answer(f'{messages["errors"]["NoSubscriptionsAvailableError"][language]}\n'
+                         f'error code: {error.code}')
+        return
+
+    answer_list = []
+    br = "➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
+    for sub in subs:
+        answer_list.append(
+            f"<b>{sub.title}</b>\n"
+            f"{messages['subscribe']['period'][language]}<b>{sub.period}</b>\n"
+            f"{sub.price} <b>{currency}</b>\n"
+        )
+    ans = f"{br}{br.join(answer_list)}{br}"
     await msg.answer(ans, reply_markup=kb.variants_kb())
 
 
-async def balance(msg: types.Message) -> None:
-    user = db.get_user(msg.from_user.id)
+async def balance(msg: types.Message, db: Database) -> None:
+    user = await db.get_user(msg.from_user.id)
     bal = user.balance
 
     await msg.answer(f"{messages['balance'][language]}<b>{bal}</b> {currency}", reply_markup=kb.balance_kb())
@@ -59,16 +68,25 @@ async def info(msg: types.Message) -> None:
     await msg.answer(ans, reply_markup=kb.info_kb())
 
 
-async def history(msg: types.Message) -> None:
-    stories = [{
-        "date": "date of buy",
-        "subscribe": "name of subscribe"
-    }, {
-        "date": "date of buy 2",
-        "subscribe": "name of subscribe 2"
-    }]  # request to database
+async def history(msg: types.Message, db: Database) -> None:
+    user = User(msg.from_user.id)
+    user_history = await db.get_history(user)
+    answer_list = []
+    count = 1
+    for purchase in user_history:
+        product_type = messages['product_type'][purchase['product'].product_type][language]
+        purchase_date = datetime.datetime.strptime(purchase['history'].purchase_date, '%Y-%m-%d %H:%M:%S.%f')
+        product_title = purchase['product'].title
+        product_price = purchase['product'].price
+        answer_list.append(
+            f"{count}) {purchase_date.strftime('%d.%m.%Y %H:%M')}\n"
+            f"<b>{product_type}</b> {product_title}, <b>{product_price} {currency}</b>"
+        )
+        count += 1
 
-    ans = "\n\n".join([f"{messages['history']['date'][language]}{story['date']}\n"
-                       f"{messages['history']['name'][language]}{story['subscribe']}" for story in stories])
+    ans = 'Ваша история покупок:\n\n' + '\n------------------------------------\n'.join(answer_list)
 
-    await msg.answer(ans, reply_markup=kb.back_btn())
+    if ans != "":
+        await msg.answer(ans, reply_markup=kb.personal_acc_kb())
+    else:
+        await msg.answer("История покупока отсутствует", reply_markup=kb.personal_acc_kb())

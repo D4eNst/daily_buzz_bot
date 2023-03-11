@@ -2,18 +2,34 @@ import datetime
 import data.errors as e
 
 
-class Subscribe:
-    def __init__(self, sub_id=0, title=None, period=None, price=None):
-        self.sub_id = sub_id
+class Product:
+    def __init__(self, product_type=None, product_id=-1, title=None, period=None, price=None, is_active=1):
+        self.product_type = product_type
+        self.product_id = product_id
         self.title = title
         self.period = period
         self.price = price
+        self.is_active = is_active
 
     def get_values(self, form=1) -> tuple:
         if form == 1:
-            return self.title, self.period, self.price
+            return self.product_type, self.title, self.period, self.price
         elif form == 2:
-            return self.sub_id, self.title, self.period, self.price
+            return self.product_type, self.product_id, self.title, self.period, self.price
+
+
+class History:
+    def __init__(self, history_id=-1, tg_id=None, product: Product = None, purchase_date=None):
+        self.history_id = history_id
+        self.tg_id = tg_id
+        self.purchase_date = purchase_date
+        self.product = product
+
+    def get_values(self, form=1) -> tuple:
+        if form == 1:
+            return tuple([self.tg_id, self.product.product_id, self.purchase_date])
+        elif form == 2:
+            return self.history_id, self.tg_id, self.product, self.purchase_date
 
 
 class User:
@@ -66,7 +82,7 @@ class User:
                 self._subscribe_date = str(datetime.datetime.today())
                 self._subscribe_period = round(30.4 * period)
             else:
-                self._subscribe_period += datetime.timedelta(round(30.4 * period)).days
+                self._subscribe_period += round(30.4 * period)
             self._total_buy += price
         else:
             raise e.InsufficientFundsError()

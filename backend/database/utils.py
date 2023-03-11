@@ -1,130 +1,126 @@
-import sqlite3 as sq
-from .models import User, Subscribe
-
-conn = sq.connect("backend/database/database.db")
-cursor = conn.cursor()
+from .models import User, Product, History
+import asyncpg
 
 
-def connect() -> None:
-    cursor.execute("""CREATE TABLE IF NOT EXISTS users(
-    tg_id INTEGER PRIMARY KEY,
-    balance INTEGER DEFAULT 0,
-    total_buy INTEGER DEFAULT 0,
-    status INTEGER DEFAULT 1,
-    subscribe BOOL DEFAULT FALSE,
-    subscribe_date INTEGER,
-    subscribe_period INTEGER
-    )""")
+async def create_pool():
+    return await asyncpg.create_pool(user="dev", password="qwerty", database="postgres",
+                                     host="localhost", port=5432, command_timeout=60)
 
-    cursor.execute("""CREATE TABLE IF NOT EXISTS subscribes(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    period INTEGER,
-    price INTEGER
-    )""")
 
-    cursor.execute("""CREATE TABLE IF NOT EXISTS history(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tg_id INTEGER,
-        sub_id INTEGER
+class Database:
+
+    def __init__(self, connector: asyncpg.pool.Pool):
+        self.connector = connector
+        self.cursor = self.connector
+
+    async def create_tables(self) -> None:
+        await self.connector.execute("""
+        CREATE TABLE IF NOT EXISTS users(
+            tg_id BIGINT PRIMARY KEY,
+            balance INT DEFAULT 0,
+            total_buy INT DEFAULT 0,
+            status INT DEFAULT 1,
+            subscribe BOOL DEFAULT FALSE,
+            subscribe_date TEXT,
+            subscribe_period INT
         )""")
-    print("database has been started successful")
-    conn.commit()
 
+        await self.connector.execute("""
+        CREATE TABLE IF NOT EXISTS products(
+            product_type TEXT,
+            product_id SERIAL PRIMARY KEY,
+            title TEXT,
+            period INT,
+            price INT,
+            is_active INTEGER DEFAULT 1
+        )""")
 
-def close() -> None:
-    conn.close()
+        await self.connector.execute("""
+            CREATE TABLE IF NOT EXISTS history(
+                id SERIAL PRIMARY KEY,
+                tg_id BIGINT,
+                product_id INT,
+                date TEXT,
+                FOREIGN KEY (tg_id) REFERENCES users (tg_id),
+                FOREIGN KEY (product_id) REFERENCES products (product_id)
+            )""")
 
+    async def add_user(self, user: User) -> None:
+        query = """INSERT INTO users(tg_id) VALUES($1)"""
+        await self.connector.execute(query, user.tg_id)
 
-def add_user(user) -> None:
-    cursor.execute("""
-            INSERT INTO users(tg_id)
-            VALUES(?)
-        """, (user.tg_id, ))
-    conn.commit()
-    pass
+    async def get_user(self, user_id: int) -> User or None:
+        query = f"SELECT * FROM users WHERE tg_id = $1"
+        res = (await self.connector.fetch(query, user_id))
+        if not res:
+            return None
+        else:
+            user = User(*res[0])
+            return user
 
+    async def update_user(self, user: User) -> None:
+        query = """UPDATE users SET
+        balance = $1,
+        total_buy = $2,
+        status = $3,
+        subscribe = $4,
+        subscribe_date = $5,
+        subscribe_period = $6 WHERE tg_id = $7
+        """
+        await self.connector.execute(query, *user.get_values())
 
-def get_user(user_id) -> User or None:
-    cursor.execute("""SELECT * FROM users WHERE tg_id==?""", (user_id,))
-    res = cursor.fetchone()
-    if not res:
-        return None
-    else:
-        values_list = list(res)
-        values_list[4] = True if values_list[4] else False
-        user = User(*values_list)
-        return user
+    def del_user(self, user: User) -> None:
+        pass
 
+    async def add_subscribe(self, sub: Product) -> None:
+        query = """INSERT INTO products(product_type, title, period, price) VALUES($1, $2, $3, $4)"""
+        await self.connector.execute(query, *sub.get_values())
 
-def update_user(user) -> None:
-    cursor.execute("""UPDATE users SET
-    balance = ?,
-    total_buy = ?,
-    status = ?,
-    subscribe = ?,
-    subscribe_date = ?,
-    subscribe_period = ? WHERE tg_id = ?
-    """, user.get_values())
-    conn.commit()
-    pass
+    async def get_product(self, sub_id) -> Product or None:
+        query = """SELECT * FROM products WHERE product_id=$1"""
+        res = (await self.connector.fetch(query, sub_id))
+        if not res:
+            return None
+        else:
+            product = Product(*res[0])
+            return product
 
+    async def get_subscribes(self) -> list:
+        query = """SELECT * FROM products WHERE is_active=1 AND product_type='Subscribe' ORDER BY price"""
+        res = await self.connector.fetch(query)
+        subs = []
+        for item in res:
+            subs.append(Product(*item))
+        return subs
 
-def del_user(user) -> None:
-    conn.commit()
-    pass
+    def update_subscribe(self, sub) -> None:
+        pass
 
+    async def del_product(self, sub: Product) -> None:
+        query = """UPDATE products SET is_active=$1 WHERE product_id=$2"""
+        await self.connector.execute(query, 0, sub.product_id)
 
-def add_subscribe(sub) -> None:
-    conn.commit()
-    pass
+    async def add_history(self, history: History) -> None:
+        query = """INSERT INTO history(tg_id, product_id, date) VALUES($1, $2, $3)"""
+        await self.connector.execute(query, *history.get_values())
 
+    async def get_history(self, user: User) -> list:
+        query = """SELECT history.*, products.* FROM history
+                   LEFT JOIN products ON history.product_id = products.product_id 
+                   WHERE history.tg_id=$1"""  # todo continue
+        res = await self.connector.fetch(query, user.tg_id)
 
-def get_subscribe(sub_id) -> Subscribe or None:
-    cursor.execute("""SELECT * FROM subscribes WHERE id==?""", (sub_id,))
-    res = cursor.fetchone()
-    if not res:
-        return None
-    else:
-        sub = Subscribe(*res)
-        return sub
+        histories = []
+        for item in res:
+            history_values = item[:4]
+            product_values = item[4:]
+            histories.append({'product': Product(*product_values), 'history': History(*history_values)})
+        return histories
 
+    def update_history(self) -> None:
+        self.connector.commit()
+        pass
 
-def get_subscribes() -> list:
-    cursor.execute("""SELECT * FROM subscribes""")
-    res = cursor.fetchall()
-    subs = []
-    for i in res:
-        sub = Subscribe(*i)
-        subs.append(sub)
-    return subs
-
-
-def update_subscribe(sub) -> None:
-    conn.commit()
-    pass
-
-
-def del_subscribe(sub) -> None:
-    conn.commit()
-    pass
-
-
-def add_history() -> None:
-    conn.commit()
-    pass
-
-
-def get_history() -> None:
-    conn.commit()
-    pass
-
-
-def update_history() -> None:
-    conn.commit()
-    pass
-
-
-def del_history() -> None:
-    conn.commit()
-    pass
+    def del_history(self) -> None:
+        self.connector.commit()
+        pass

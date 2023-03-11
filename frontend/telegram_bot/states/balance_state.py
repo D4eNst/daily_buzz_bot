@@ -1,5 +1,5 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.fsm.state import StatesGroup, State
 
 
 class BalanceStatesGroup(StatesGroup):
-    WaitingPrice = State()
+    WAITING_PRICE = State()
