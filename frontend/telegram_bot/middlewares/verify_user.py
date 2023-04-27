@@ -41,15 +41,16 @@ class VerifyUser(BaseMiddleware):
                 if self.users_dict[str(msg.from_user.id)] == 0:
                     self.users_dict[str(msg.from_user.id)] = 1
                     await self.save_user_dict_to_radis(user_dict=self.users_dict)
+                    print(msg)
                     return await handler(event, data)
                 else:
                     return await bot.send_message(msg.from_user.id,
-                                                  "Please, use /start ONLY for initialize dialog with the bot")
+                                                  "You already used the command /start.")
             else:
                 raise KeyError
         except KeyError:
             if self.users_dict[str(msg.from_user.id)] == 0:
                 return await bot.send_message(msg.from_user.id,
-                                              "Please, use /start for initialize dialog with the bot")
+                                              "Please, use /start for using the bot!")
             else:
                 return await handler(event, data)

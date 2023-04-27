@@ -9,6 +9,8 @@ utils_buttons:
     ru: "Отмена"
   confirm:
     ru: "Подтвердить"
+  payed:
+    ru: "Проверить оплату"
 
 main_menu:
   about:

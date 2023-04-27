@@ -3,11 +3,14 @@ from typing import Callable, Awaitable, Dict, Any
 from aiogram.types.base import TelegramObject
 from backend.database.utils import Database
 from aiogram import BaseMiddleware
+from yoomoney import Client
+from data.config import payment_token
 
 
 class DbSession(BaseMiddleware):
     def __init__(self, conn: asyncpg.pool.Pool):
         self.connector = conn
+        self.client = Client(payment_token)
         super(DbSession, self).__init__()
 
     async def __call__(
@@ -16,6 +19,7 @@ class DbSession(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
-        async with self.connector.acquire() as connect:
-            data['db'] = Database(connect)
+        async with self.connector.acquire() as connector:
+            data['client'] = self.client
+            data['db'] = Database(connector=connector)
             return await handler(event, data)

@@ -18,6 +18,7 @@ class SubscriptionNotFoundError(Exception):
 
 class MinReplenishmentAmountError(Exception):
     """ Raised when quantity < min replenishment amount """
+
     def __init__(self, message="Subscription is not found in database", error_code=406):
         self.message = message
         self.code = error_code

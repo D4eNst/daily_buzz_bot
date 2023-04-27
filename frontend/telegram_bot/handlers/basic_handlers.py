@@ -17,6 +17,7 @@ async def cmd_start(msg: types.Message, state: FSMContext, db: utils.Database) -
 
 
 async def main_menu(msg: types.Message, state: FSMContext) -> None:
+    await state.clear()
     await state.set_state(DefaultState.DEFAULT_STATE)
     await msg.answer(messages["main_menu"][language], reply_markup=kb.main_menu_kb())
 
@@ -27,6 +28,8 @@ async def cmd_help(msg: types.Message) -> None:
 
 async def faq(msg: types.Message) -> None:
     await msg.answer(messages["faq"][language], reply_markup=kb.main_menu_btn())
+    print(msg.chat)
+    print(type(msg.chat))
 
 
 async def rules(msg: types.Message) -> None:
@@ -38,6 +41,7 @@ async def about(msg: types.Message) -> None:
 
 
 async def personal_acc(msg: types.Message, state: FSMContext) -> None:
+    await state.set_state()
     await state.set_state(DefaultState.DEFAULT_STATE)
     await msg.answer(messages["personal_acc"][language], reply_markup=kb.personal_acc_kb())
 

@@ -1,11 +1,13 @@
 from datetime import datetime
-from aiogram import types
+from aiogram import types, Bot
 from aiogram.fsm.context import FSMContext
+from yoomoney import Client, Quickpay, History
+# from aiogram.types import LabeledPrice, PreCheckoutQuery
 
 from .keyboards import keyboards as kb, inline_keyboards as ikb
 import frontend.telegram_bot.states as states
 from backend.database.utils import Database
-from backend.database.models import User, Product, History
+from backend.database.models import User, Product, History, get_final_price, get_status
 from data.config import language, currency, min_replenishment_amount
 from data import messages
 from data import errors as e
@@ -17,26 +19,55 @@ async def add_balance(msg: types.Message, state: FSMContext) -> None:
     await state.set_state(states.BalanceStatesGroup.WAITING_PRICE)
 
 
-async def finish_balance(msg: types.Message, state: FSMContext, db: Database) -> None:
-    user = await db.get_user(msg.from_user.id)
-
+async def confirm_pay(msg: types.Message, state: FSMContext) -> None:
     if msg.text.isdigit():
         quantity = int(msg.text)
         if quantity >= min_replenishment_amount:
-            user.replenish_balance(quantity)
-            await db.update_user(user)
-            await state.set_state(states.DefaultState.DEFAULT_STATE)
-            await msg.answer(f"{messages['balance']['replenished_suc'][language]}{user.balance} {currency}",
-                             reply_markup=kb.main_menu_kb())
+            date_now = datetime.timestamp(datetime.now())
+            label = f"{msg.from_user.id}-{int(date_now * 100)}-{quantity}"
+            print(label)
+            quickpay = Quickpay(
+                receiver="4100117197160613",
+                quickpay_form="shop",
+                targets="Sponsor this project",
+                paymentType="SB",
+                sum=quantity,
+                label=label
+            )
+            await state.set_state(states.BalanceStatesGroup.WAITING_PAY)
+            await msg.answer(f'<a href="{quickpay.redirected_url}">{messages["pay"]["click_to_pay"][language]}</a>',
+                             reply_markup=ikb.pay_btn(label))
         else:
             try:
                 raise e.MinReplenishmentAmountError
             except e.MinReplenishmentAmountError as er:
-                await state.set_state(states.DefaultState.DEFAULT_STATE)
-                await msg.answer(f"{messages['balance']['replenished_err'][language]}{er.code}",
-                                 reply_markup=kb.main_menu_kb())
+                await msg.answer(f"{messages['balance']['replenished_err'][language]}{er.code}")
     else:
         await msg.reply(messages["errors"]["NaNError"][language])
+
+
+async def finish_balance(callback: types.CallbackQuery, state: FSMContext, db: Database, client: Client, bot: Bot):
+    await callback.answer()
+    user = await db.get_user(callback.from_user.id)
+    label = callback.data.split("_")
+    label = label[1]
+    quantity = int(label.split("-")[2])
+
+    history: History = client.operation_history(label=label)
+    if history.operations:
+        # if True:
+        operation = history.operations[0]
+        if operation.status == "success":
+            # if True:
+            await bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id, None, None)
+            user.replenish_balance(quantity)
+            await db.update_user(user)
+            await state.set_state(states.DefaultState.DEFAULT_STATE)
+            await callback.message.answer(
+                f"{messages['balance']['replenished_suc'][language]}{user.balance} {currency}",
+                reply_markup=kb.main_menu_kb())
+    else:
+        await callback.message.answer(messages['pay']['waiting'][language])
 
 
 async def buy_subscribe(msg: types.Message, state: FSMContext, db: Database) -> None:
@@ -47,6 +78,7 @@ async def buy_subscribe(msg: types.Message, state: FSMContext, db: Database) -> 
         except e.SubscriptionNotFoundError as error:
             await msg.answer(f'{messages["errors"]["NoSubscriptionsAvailableError"][language]}\n'
                              f'error code: {error.code}', reply_markup=kb.personal_acc_kb())
+            await state.clear()
             await state.set_state(states.DefaultState.DEFAULT_STATE)
             return
     await msg.answer(messages["subscribe"]["choose"][language], reply_markup=ikb.list_subs(subs))
@@ -70,10 +102,12 @@ async def choose_subscribe(callback: types.CallbackQuery, state: FSMContext, db:
         data["user"] = user.get_values(form=2)
         await state.set_data(data)
 
-        await callback.message.answer(f"{messages['subscribe']['warning'][language]}{sub.price} {currency}",
+        final_price = get_final_price(sub.price, user.status)
+        await callback.message.answer(f"{messages['subscribe']['warning'][language]}{final_price} {currency}",
                                       reply_markup=kb.confirm_btn())
 
     except e.SubscriptionNotFoundError as er:
+        await state.clear()
         await state.set_state(states.DefaultState.DEFAULT_STATE)
         await callback.answer("invalid button", show_alert=True)
         await callback.message.answer(f"{messages['errors']['SubscriptionNotFoundError'][language]}\n"
@@ -85,8 +119,14 @@ async def confirm_subscribe(msg: types.Message, state: FSMContext, db: Database)
     user = User(*data['user'])
     sub = Product(*data['sub'])
     try:
-        user.buy_subscribe(sub.price, sub.period)
-        purchase_history = History(tg_id=user.tg_id, product=sub, purchase_date=str(datetime.today()))
+        final_price = get_final_price(sub.price, user.status)
+        sub.price = final_price
+        user.buy_subscribe(final_price, sub.period)
+        user.status = get_status(user.total_buy)[0]
+        purchase_history = History(tg_id=user.tg_id,
+                                   product=sub,
+                                   purchase_date=str(datetime.today()),
+                                   current_status=user.status)
         await db.update_user(user)
         await db.add_history(purchase_history)
         await msg.answer(f'{messages["subscribe"]["confirm"][language]}')
@@ -94,4 +134,5 @@ async def confirm_subscribe(msg: types.Message, state: FSMContext, db: Database)
         await msg.answer(f'{messages["errors"]["InsufficientFundsError"][language]}\nError code: {error.code}')
 
     await msg.answer(messages["main_menu"][language], reply_markup=kb.main_menu_kb())
+    await state.clear()
     await state.set_state(states.DefaultState.DEFAULT_STATE)

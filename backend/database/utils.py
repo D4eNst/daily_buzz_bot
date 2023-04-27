@@ -1,4 +1,4 @@
-from .models import User, Product, History
+from .models import User, Product, History, get_final_price
 import asyncpg
 
 
@@ -19,7 +19,7 @@ class Database:
             tg_id BIGINT PRIMARY KEY,
             balance INT DEFAULT 0,
             total_buy INT DEFAULT 0,
-            status INT DEFAULT 1,
+            status INT DEFAULT 0,
             subscribe BOOL DEFAULT FALSE,
             subscribe_date TEXT,
             subscribe_period INT
@@ -41,6 +41,7 @@ class Database:
                 tg_id BIGINT,
                 product_id INT,
                 date TEXT,
+                current_status INT DEFAULT 0,
                 FOREIGN KEY (tg_id) REFERENCES users (tg_id),
                 FOREIGN KEY (product_id) REFERENCES products (product_id)
             )""")
@@ -67,7 +68,7 @@ class Database:
         subscribe_date = $5,
         subscribe_period = $6 WHERE tg_id = $7
         """
-        await self.connector.execute(query, *user.get_values())
+        await self.connector.execute(query, *user.get_values(), user.tg_id)
 
     def del_user(self, user: User) -> None:
         pass
@@ -101,26 +102,34 @@ class Database:
         await self.connector.execute(query, 0, sub.product_id)
 
     async def add_history(self, history: History) -> None:
-        query = """INSERT INTO history(tg_id, product_id, date) VALUES($1, $2, $3)"""
+        query = """INSERT INTO history(tg_id, product_id, date, current_status) VALUES($1, $2, $3, $4)"""
         await self.connector.execute(query, *history.get_values())
 
     async def get_history(self, user: User) -> list:
         query = """SELECT history.*, products.* FROM history
                    LEFT JOIN products ON history.product_id = products.product_id 
-                   WHERE history.tg_id=$1"""  # todo continue
+                   WHERE history.tg_id=$1 order by date"""
         res = await self.connector.fetch(query, user.tg_id)
 
         histories = []
+        total_buy = 0
         for item in res:
-            history_values = item[:4]
-            product_values = item[4:]
-            histories.append({'product': Product(*product_values), 'history': History(*history_values)})
+            history_values = item[:5]
+            product_values = item[5:]
+            histories.append(
+                {
+                    'product': Product(*product_values),
+                    'history': History(*history_values),
+                    'total_buy': -1
+                }
+            )
+            total_buy += get_final_price(histories[-1]['product'].price, histories[-1]['history'].current_status)
+        if histories:
+            histories[-1]['total_buy'] = total_buy
         return histories
 
     def update_history(self) -> None:
-        self.connector.commit()
         pass
 
     def del_history(self) -> None:
-        self.connector.commit()
         pass
